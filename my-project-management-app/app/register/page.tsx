@@ -1,13 +1,15 @@
-import { useState } from "react";
-import { useRouter } from "next/router";
+"use client";
 
-export default function LoginPage() {
+import { useState } from "react";
+import { signUp } from "supertokens-web-js/recipe/emailpassword";
+import "supertokens-web-js";
+
+export default function SignUpPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const router = useRouter();
 
-  const handleLogin = (e) => {
+    const handleSignUp = async (e:SubmitEvent) => {
     e.preventDefault();
     // Placeholder basic validation
     if (!email || !password) {
@@ -16,19 +18,24 @@ export default function LoginPage() {
     }
     //placeholder until API calls/authentication are implemented
 
-    if (email === "user@example.com" && password === "password123") {
-      // Redirect to dashboard page upon successful login
-      router.push("/dashboard");
-    } else {
-      setError("Invalid email or password.");
-    }
+    const response = await signUp({
+        formFields: [{
+            id: "email",
+            value: email
+        }, {
+            id: "password",
+            value: password
+        }]
+    })
+    console.log(response)
   };
 
   return (
+    
     <div className="container">
-      <h1>Login</h1>
+      <h1>Sign-Up</h1>
       {error && <p className="error">{error}</p>}
-      <form onSubmit={handleLogin}>
+      <form onSubmit={handleSignUp}>
         <div>
           <label htmlFor="email">Email:</label>
           <input
@@ -49,7 +56,7 @@ export default function LoginPage() {
             required
           />
         </div>
-        <button type="submit">Login</button>
+        <button type="submit">Sign-Up</button>
       </form>
     </div>
   );

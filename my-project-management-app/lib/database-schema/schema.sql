@@ -16,16 +16,15 @@ DROP TABLE IF EXISTS projects CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 
 -- Users Table
-CREATE TABLE users (
-    user_id SERIAL PRIMARY KEY,      -- Unique user ID
-    username VARCHAR(255) UNIQUE NOT NULL,   -- Username for login
-    email VARCHAR(255) UNIQUE NOT NULL,      -- User's email address
-    password_hash VARCHAR(255) NOT NULL,    -- Password hash for authentication
-    full_name VARCHAR(255) NOT NULL,         -- Full name of the user
-    role VARCHAR(50) DEFAULT 'user',        -- Role of the user (e.g., user, admin)
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- When the account was created
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- When the account was last updated
-);
+-- CREATE TABLE users (
+--     user_id SERIAL PRIMARY KEY,      -- Unique user ID
+--     username VARCHAR(255) UNIQUE NOT NULL,   -- Username for login
+--     email VARCHAR(255) UNIQUE NOT NULL,      -- User's email address
+--     full_name VARCHAR(255) NOT NULL,         -- Full name of the user
+--     role VARCHAR(50) DEFAULT 'user',        -- Role of the user (e.g., user, admin)
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- When the account was created
+--     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- When the account was last updated
+-- );
 
 -- Projects Table
 CREATE TABLE projects (
@@ -38,7 +37,7 @@ CREATE TABLE projects (
     status VARCHAR(50) DEFAULT 'active', -- Status (e.g., active, completed, on hold)
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- When the project was created
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- When the project was last updated
-    FOREIGN KEY (created_by) REFERENCES users(user_id) ON DELETE CASCADE
+    created_by UUID NOT NULL-- supertoken user_id
 );
 -- Tasks Table
 CREATE TABLE tasks (
@@ -53,7 +52,7 @@ CREATE TABLE tasks (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- When the task was created
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- When the task was last updated
     FOREIGN KEY (project_id) REFERENCES projects(project_id) ON DELETE CASCADE,
-    FOREIGN KEY (assigned_to) REFERENCES users(user_id) ON DELETE SET NULL
+    assigned_to UUID NOT NULL-- supertoken user_id
 );
 
 -- Attachments Table (to store file attachments for tasks)
@@ -65,7 +64,7 @@ CREATE TABLE attachments (
     uploaded_by INT NOT NULL,            -- Foreign key to users table (who uploaded the file)
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- When the attachment was added
     FOREIGN KEY (task_id) REFERENCES tasks(task_id) ON DELETE CASCADE,
-    FOREIGN KEY (uploaded_by) REFERENCES users(user_id) ON DELETE CASCADE
+    uploaded_by UUID NOT NULL-- supertoken user_id
 );
 
 -- Messaging Table (to store messages between users)
@@ -76,18 +75,16 @@ CREATE TABLE messages (
     project_id INT,                      -- Foreign key to projects table (optional)
     message_text TEXT NOT NULL,          -- Message content
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- When the message was sent
-    FOREIGN KEY (sender_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (receiver_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (project_id) REFERENCES projects(project_id) ON DELETE SET NULL
+    sender_id UUID NOT NULL,-- supertoken user_id
+    receiver_id UUID NOT NULL -- supertoken user_id
 );
 
 -- Project Membership Table (to define which users belong to which projects)
 CREATE TABLE project_memberships (
-    project_id INT NOT NULL,            -- Foreign key to projects table
-    user_id INT NOT NULL,               -- Foreign key to users table
     role VARCHAR(50) DEFAULT 'member',  -- Role of the user within the project (e.g., member, admin)
     joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- When the user joined the project
     PRIMARY KEY (project_id, user_id),  -- Composite primary key
     FOREIGN KEY (project_id) REFERENCES projects(project_id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+    user_id UUID NOT NULL -- supertoken user_id
 );
